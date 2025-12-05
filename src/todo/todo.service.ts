@@ -17,18 +17,24 @@ export class TodoService {
   constructor(private supabaseService: SupabaseService) {}
 
   async create(createTodoDto: CreateTodoDto): Promise<Todo> {
-    const { data, error } = await this.supabaseService
-      .getClient()
-      .from('todos')
-      .insert([createTodoDto])
-      .select()
-      .single();
+    try {
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('todos')
+        .insert([createTodoDto])
+        .select()
+        .single();
 
-    if (error) {
-      throw new Error(`Failed to create todo: ${error.message}`);
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(`Failed to create todo: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Create todo error:', error);
+      throw error;
     }
-
-    return data;
   }
 
   async findAll(): Promise<Todo[]> {
