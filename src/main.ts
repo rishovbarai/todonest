@@ -9,16 +9,23 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   
   // Enable CORS for frontend
-  const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
-    : ['http://localhost:3000', 'http://localhost:3001'];
+  let allowedOrigins: string[] = [];
+  
+  if (process.env.NODE_ENV === 'production') {
+    // In production, use ALLOWED_ORIGINS env var or default to empty array
+    allowedOrigins = process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+      : [];
+  } else {
+    // In development, allow all origins
+    allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+  }
   
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : true,
+    origin: process.env.NODE_ENV === 'production' 
+      ? (allowedOrigins.length > 0 ? allowedOrigins : true)
+      : true,
     credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    exposedHeaders: ['Content-Type'],
   });
   
   // Global validation pipe
